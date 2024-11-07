@@ -1,0 +1,10 @@
+{
+    "cSpell.words": [
+        "allauth",
+        "socialaccount"
+    ],
+    "flake8.args": [
+        "--max-line-length=120",
+    ],
+    "workbench.preferredHighContrastColorTheme": "Material Theme Ocean High Contrast"
+}
