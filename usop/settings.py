@@ -7,15 +7,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # ENV FILE
+# Defaults to local if an environment is not specified
 env = environ.Env(DEBUG=(bool, False))
-if env.bool("READ_DOT_ENV_FILE", default=True):
-    environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
-ENVIRONMENT_NAME = env("ENVIRONMENT_NAME", default="")
+ENVIRONMENT_NAME = env("ENVIRONMENT_NAME", default="local")
+environ.Env.read_env(os.path.join(BASE_DIR, "envs", ENVIRONMENT_NAME + ".env"))
 
 
 # DJANGO
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
+if ENVIRONMENT_NAME=="local":
+    DEBUG = True
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 ALLOWED_HOSTS = []
 
@@ -41,9 +43,9 @@ INSTALLED_APPS = [
     # Other third party
     "django_celery_results",
     "django_celery_beat",
-    # App
-    "apps.users",
-    "apps.services",
+    # Core apps
+    "usop.apps.users",
+    # Custom apps and services
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -90,10 +92,10 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 # ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_ADAPTER = "apps.users.adapters.AccountAdapter"
-ACCOUNT_FORMS = {"signup": "apps.users.forms.UserSignupForm"}
-SOCIALACCOUNT_ADAPTER = "apps.users.adapters.SocialAccountAdapter"
-SOCIALACCOUNT_FORMS = {"signup": "apps.users.forms.UserSocialSignupForm"}
+ACCOUNT_ADAPTER = "usop.apps.users.adapters.AccountAdapter"
+ACCOUNT_FORMS = {"signup": "usop.apps.users.forms.UserSignupForm"}
+SOCIALACCOUNT_ADAPTER = "usop.apps.users.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_FORMS = {"signup": "usop.apps.users.forms.UserSocialSignupForm"}
 MFA_SUPPORTED_TYPES = [
     "webauthn",
     "totp",
@@ -145,9 +147,6 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by email
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
-
-# SERVICE APP CONFIGS
-SERVICE_TASK_PROCESS_MODE = env('SERVICE_TASK_PROCESS_MODE')
 
 
 # CELERY
