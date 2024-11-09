@@ -2,6 +2,8 @@ import datetime
 import uuid
 from django.db import models
 
+from usop.apps.users.models import Org
+
 
 class Region(models.Model):
     """A deployment area, section or group for services"""
@@ -60,6 +62,9 @@ class Service(models.Model):
 
     region: Region = models.ForeignKey(Region, related_name="services", on_delete=models.CASCADE)
     """ Region where the service is deployed """
+    
+    org: Org = models.ForeignKey(Org, related_name="services", on_delete=models.CASCADE)
+    """ Org where the service is owned """
 
     class Meta:
         verbose_name = "service"
