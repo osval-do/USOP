@@ -43,8 +43,10 @@ INSTALLED_APPS = [
     # Other third party
     "django_celery_results",
     "django_celery_beat",
+    "viewflow",
     # Core apps
     "usop.apps.users",
+    "usop.apps.services"
     # Custom apps and services
 ]
 MIDDLEWARE = [
@@ -156,3 +158,7 @@ CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     "visibility_timeout": 3600,
 }
+
+
+# SERVICE DEPLOYMENT SETTINGS
+DRY_RUN = env("DRY_RUN", default=False)

@@ -2,6 +2,7 @@ import datetime
 import uuid
 from django.db import models
 
+from .status import ServiceStatus
 from usop.apps.users.models import Org
 
 
@@ -16,9 +17,12 @@ class Region(models.Model):
 
     disabled: bool = models.BooleanField()
     """ Wether to disable selecting this region for services """
+    
+    namespace: str = models.CharField(max_length=128, blank=True, null=True)
+    """ The kubernetes namespace used for this region """
 
-    templateFilter = models.ManyToManyField('Template', help_text="Sites that can display this template.")
-    """ A filter to only allow certain types of templates to run in this region """
+    #templateFilter = models.ManyToManyField('Template', help_text="Sites that can display this template.")
+    #""" A filter to only allow certain types of templates to run in this region """
 
     class Meta:
         verbose_name = "region"
@@ -28,10 +32,9 @@ class Region(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+
 class Service(models.Model):
-    """
-    A service ...
-    """
+    """Service model keeps track of an instance of a service that can be deployed in a region"""
 
     name: str = models.CharField(max_length=128)
     """ User facing label for the service """
@@ -65,6 +68,15 @@ class Service(models.Model):
     
     org: Org = models.ForeignKey(Org, related_name="services", on_delete=models.CASCADE)
     """ Org where the service is owned """
+    
+    app_name: str = models.CharField(max_length=128, blank=True, null=True)
+    """ The name of the django application linked to this service """
+    
+    status: str = models.CharField(max_length=150, choises=ServiceStatus.choices, default=ServiceStatus.NEW)
+    """ The current status of the service """
+    
+    template: str = models.CharField(max_length=128, blank=True, null=True)
+    """ The template used to deploy this service """
 
     class Meta:
         verbose_name = "service"
