@@ -18,8 +18,8 @@ The Unified Service Orchestrator Platform (USOP) is designed to orchestrate serv
 - **Helm**: Package manager for deploying and managing Kubernetes applications.
 - **Django**: Python web framework for the management interface and API.
 - **PostgreSQL**: Database for storing platform-related data.
-- **Prometheus**: Monitoring and alerting system for the deployed services.
-- **Grafana**: Data visualization and dashboard tool for monitoring.
+- **Prometheus**: Monitoring and alerting system for the deployed services (TODO).
+- **Grafana**: Data visualization and dashboard tool for monitoring (TODO).
 
 ## Getting Started
 
@@ -38,21 +38,22 @@ The Unified Service Orchestrator Platform (USOP) is designed to orchestrate serv
    - Helm installed
    - Python 3.x and Django installed
 
-2. **Installation**:
+2. **Installation (directly on server)**:
    - Clone the repository: `git clone https://github.com/osval-do/usop.git`
    - Navigate to the project directory: `cd usop`
    - Install the required Python dependencies: `pip install -r requirements.txt`
    - Initialize the Django database: `python manage.py migrate`
    - Start the Django development server: `python manage.py runserver`
 
-3. **Deployment**:
+3. **Installation (Kubernetes)**:
    - Create Kubernetes namespaces for the platform and the managed services
-   - Deploy the platform components using Helm charts
+   - Package chart: `helm package deployment/chart`
+   - Install using the packaged chart: `helm install USOP my-usop-instance`
    - Register and configure the managed services within the platform
 
 4. **Usage**:
    - Access the platform's web interface at `http://localhost:8000`
-   - Manage the deployed services, monitor their health, and configure alerts
+   - Manage the regions, services, monitor their health, and configure alerts
 
 ## Contributing
 
