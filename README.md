@@ -47,8 +47,9 @@ The Unified Service Orchestrator Platform (USOP) is designed to orchestrate serv
 
 3. **Installation (Kubernetes)**:
    - Create Kubernetes namespaces for the platform and the managed services
+   - Get/Update dependencies: `helm dependency update deployment/chart`
    - Package chart: `helm package deployment/chart`
-   - Install using the packaged chart: `helm install USOP my-usop-instance`
+   - Install using the packaged chart: `helm install USOP deployment/chart`
    - Register and configure the managed services within the platform
 
 4. **Usage**:

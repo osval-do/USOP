@@ -7,6 +7,7 @@ from viewflow.contrib.auth import AuthViewset
 from viewflow.urls import Application, Site, ModelViewset
 
 from .apps.services import views as ServiceViews
+from .views import health, ready
 
 site = Site(
     title="USOP", 
@@ -18,6 +19,8 @@ site = Site(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
+    path('health/', health),
+    path('ready/', ready),
     path('', site.urls),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

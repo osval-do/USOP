@@ -1,6 +1,7 @@
-{{- if .Values.ingress.enabled -}}
+{{- if .Values.celery.flower.ingress.enabled -}}
 {{- $fullName := include "django.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
+{{- $svcPort := .Values.celery.flower.service.port.number -}}
+{{-  $serviceNamespace := printf "%s-%s" .Values.serviceNamespace .Values.serviceTag -}}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -15,7 +16,7 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ printf "%s-%s" .Release.Name .Values.celery.flower.componentName }}
   labels:
     {{- include "django.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
@@ -26,9 +27,9 @@ spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if .Values.ingress.tls }}
+  {{- if .Values.celery.flower.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .Values.celery.flower.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -37,7 +38,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range .Values.celery.flower.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -47,15 +48,15 @@ spec:
             pathType: {{ .pathType }}
             {{- end }}
             backend:
+          {{- end }}
+    {{- end }}
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ $fullName }}
+                name: {{ printf "%s-%s" .Release.Name .Values.celery.flower.componentName }}
                 port:
                   number: {{ $svcPort }}
               {{- else }}
-              serviceName: {{ $fullName }}
+              name: {{ printf "%s-%s" .Release.Name .Values.celery.flower.componentName }}
               servicePort: {{ $svcPort }}
               {{- end }}
-          {{- end }}
-    {{- end }}
 {{- end }}

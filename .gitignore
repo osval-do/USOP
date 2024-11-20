@@ -141,3 +141,4 @@ GitHub.sublime-settings
 s.bat
 s.sh
 temp/
+deployment/chart/charts/

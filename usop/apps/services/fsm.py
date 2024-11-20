@@ -28,6 +28,7 @@ class ServiceFSM(object):
 
     @state.transition(source=ServiceStatus.NEW, target=ServiceStatus.RUNNING)
     def deploy(self):
+        """ Deploy the service in the target region """
         helm_command = [
             "helm", "upgrade", "--install", "--atomic",]
         if settings.DEBUG:
@@ -45,6 +46,7 @@ class ServiceFSM(object):
         
     @state.transition(source=ServiceStatus.UPGRADING, target=ServiceStatus.RUNNING)
     def upgrade(self):
+        """ Upgrade the service to the latest version of the chart """
         helm_command = [
             "helm", "upgrade", "--install", "--reuse-values", "--atomic"]
         if settings.DEBUG:
@@ -62,6 +64,13 @@ class ServiceFSM(object):
         
     @state.transition(source=ServiceStatus.RUNNING, target=ServiceStatus.STOPPED)
     def stop(self):
-        pass
+        """ Stop the service by deleting the running pod """
+        kubectl_command = [
+            "kubectl", "delete", "pod", str(self.service.pid),
+            "--namespace", self.service.region.namespace
+        ]
+        result = subprocess.run(kubectl_command, check=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"Kubectl command failed with return code {result.returncode}: {result.stderr}")
     
     
