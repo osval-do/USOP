@@ -1,10 +1,11 @@
 import datetime
 import uuid
 from django.db import models
+from django.conf import settings
 
 from .status import ServiceStatus
 from usop.apps.users.models import Org
-
+from .interfaces import *
 
 class Region(models.Model):
     """A deployment area, section or group for services"""
@@ -72,7 +73,7 @@ class Service(models.Model):
     app_name: str = models.CharField(max_length=128, blank=True, null=True)
     """ The name of the django application linked to this service """
     
-    status: str = models.CharField(max_length=150, choises=ServiceStatus.choices, default=ServiceStatus.NEW)
+    status: str = models.CharField(max_length=150, choices=ServiceStatus.choices, default=ServiceStatus.NEW)
     """ The current status of the service """
     
     template: str = models.CharField(max_length=128, blank=True, null=True)
@@ -88,5 +89,12 @@ class Service(models.Model):
         ]
 
     def __str__(self):
-        # TemplateSKU.objects.filter()
-        return f"{self.name}"
+        return f"{self.name}"    
+    
+    def get_controller(self) -> IServiceController:
+        """ Get the controller for this service """
+        model_path = settings.SERVICE_CONTROLLER
+        module, klass = model_path.rsplit(".", 1)
+        services = __import__(module, fromlist=[klass])
+        controller = getattr(services, klass)
+        return controller(self)

@@ -2,11 +2,12 @@ from django.conf import settings
 from viewflow.fsm import State
 from django.utils.translation import gettext_lazy as _
 
+from .interfaces import IServiceController
 from .models import Service
 from usop.apps.services.status import ServiceStatus
 import subprocess
 
-class ServiceFSM(object):
+class ServiceController(IServiceController):
     state = State(ServiceStatus, default=ServiceStatus.NEW)
     service: Service
     
@@ -25,6 +26,10 @@ class ServiceFSM(object):
     def _on_transition_success(self, descriptor, source, target):
         """ Save the service after a successful transition """
         self.service.save()
+        
+    def get_status(self):
+        """ Get the current status of the service """
+        return self.service.status
 
     @state.transition(source=ServiceStatus.NEW, target=ServiceStatus.RUNNING)
     def deploy(self):
@@ -72,5 +77,4 @@ class ServiceFSM(object):
         result = subprocess.run(kubectl_command, check=True, capture_output=True, text=True)
         if result.returncode != 0:
             raise Exception(f"Kubectl command failed with return code {result.returncode}: {result.stderr}")
-    
     

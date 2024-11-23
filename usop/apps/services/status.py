@@ -2,8 +2,6 @@ from django.utils.translation import gettext_lazy as _
 
 from django.db.models import TextChoices
 
-from enum import Enum
-
 
 class ServiceStatus(TextChoices):
    NEW  = 'NEW', _('New')
@@ -44,5 +42,3 @@ class ServiceStatus(TextChoices):
 
    BACKING_UP = 'BACKING_UP', _('Backing up')
    """ The service storage resources are being backed up. Services are still running. """
-
-   _MAX = 40
