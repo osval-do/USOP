@@ -36,6 +36,15 @@ class Org(models.Model):
         editable=False,
     )
     """ Automatically genered unique id for external identification """
+    
+    namespace = models.UUIDField(
+        verbose_name="Namespace ID",
+        help_text="Automatically genered unique id for namespace",
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
+    """ Automatically genered unique id for namespace """
 
     class Meta:
         indexes = [

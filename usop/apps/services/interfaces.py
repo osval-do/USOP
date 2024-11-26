@@ -19,9 +19,6 @@ class IServiceController:
     def stop(self):
         raise NotImplementedError
 
-    def scale(self):
-        raise NotImplementedError
-
     def restart(self):
         raise NotImplementedError
 

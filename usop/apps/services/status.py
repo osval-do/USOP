@@ -37,7 +37,7 @@ class ServiceStatus(TextChoices):
    CLEARING = 'CLEARING', _('Clearing')
    """ The service is being cleared from the platform """
 
-   CLEARED = 'CLEARED', _('Cleared')
+   DESTROYED = 'DESTROYED', _('Destroyed')
    """ The service has been cleared from the platform """
 
    BACKING_UP = 'BACKING_UP', _('Backing up')
