@@ -163,3 +163,4 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 # SERVICE DEPLOYMENT SETTINGS
 DRY_RUN = env("DRY_RUN", default=False)
 DEFAULT_CONTROLLER = env("DEFAULT_CONTROLLER", default="usop.apps.services.controller.ServiceController")
+DEFAULT_NAMESPACE = env("DEFAULT_NAMESPACE", default="usop_default")

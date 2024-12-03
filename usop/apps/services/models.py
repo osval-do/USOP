@@ -7,6 +7,7 @@ from .allocation import DefaultNodeAllocator, NodeAllocator
 from .status import ServiceStatus
 from usop.apps.users.models import Org
 from .interfaces import *
+from usop.lib.CachedClassUtil import CachedClassUtil
 
 
 
@@ -140,10 +141,20 @@ class Service(models.Model):
     def __str__(self):
         return f"{self.name}"    
     
-    def get_controller(self) -> IServiceController:
+    def get_service_controller(self) -> IServiceController:
         """ Get the controller for this service """
         model_path = settings.SERVICE_CONTROLLER
-        module, klass = model_path.rsplit(".", 1)
-        services = __import__(module, fromlist=[klass])
-        controller = getattr(services, klass)
-        return controller(self)
+        # TODO allow apps to define their own controllers
+        _class = CachedClassUtil.get_class(model_path)
+        return _class(self)
+    
+    @property
+    def namespace(self):
+        return self.service.region.namespace or settings.DEFAULT_NAMESPACE
+    
+    @property
+    def get_billing_controller(self) -> IBillingController:
+        """ Get the billing controller for this service """
+        model_path = settings.BILLING_CONTROLLER
+        # TODO allow apps to define their own controllers
+        return CachedClassUtil.get_instance(model_path)
