@@ -84,3 +84,10 @@ class IServiceController:
 
     def log(self, message):
         raise NotImplementedError
+
+
+class IBillingController:
+    """Interface for a controller that manages the billing of a service"""
+
+    def can_deploy(self, service):
+        raise NotImplementedError

@@ -2,10 +2,17 @@ from django.conf import settings
 from viewflow.fsm import State
 from django.utils.translation import gettext_lazy as _
 
-from .interfaces import IServiceController
+from .interfaces import IBillingController, IServiceController
 from .models import Service
 from usop.apps.services.status import ServiceStatus
 import subprocess
+
+
+class DefaultBillingController(IBillingController): 
+    """ Reimplement this class to allow billing for services """   
+    def can_deploy(self, service):
+        return True
+    
 
 class ServiceController(IServiceController):
     state = State(ServiceStatus, default=ServiceStatus.NEW)
@@ -34,7 +41,11 @@ class ServiceController(IServiceController):
     @state.transition(source=ServiceStatus.NEW, target=ServiceStatus.RUNNING)
     def deploy(self):
         """ Deploy the service in the target region """
-        helm_command = settings.HELM_COMMAND + ["upgrade", "--install", "--atomic",]
+        billing_ok = self.service.get_billing_controller().can_deploy(self.service)
+        if not billing_ok:
+            raise Exception(_("Billing failed"))
+        helm_command = [
+            "helm", "upgrade", "--install", "--atomic",]
         if settings.DEBUG:
             helm_command += ["--debug"]
         if settings.DRY_RUN:
@@ -42,7 +53,7 @@ class ServiceController(IServiceController):
         helm_command += [
             str(self.service.pid),
             self.service.template,
-            "--namespace", self.service.org.namespace
+            "--namespace", self.service.namespace
         ]
         result = subprocess.run(helm_command, check=True, capture_output=True, text=True)
         if result.returncode != 0:
@@ -50,8 +61,12 @@ class ServiceController(IServiceController):
         
     @state.transition(source=ServiceStatus.UPGRADING, target=ServiceStatus.RUNNING)
     def upgrade(self):
-        """ Upgrade the service to the latest version of the chart """
-        helm_command = settings.HELM_COMMAND + ["--install", "--reuse-values", "--atomic"]
+        """ Upgrade the service to the latest version of the chart """        
+        billing_ok = self.service.get_billing_controller().can_deploy(self.service)
+        if not billing_ok:
+            raise Exception(_("Billing failed"))
+        helm_command = [
+            "helm", "upgrade", "--install", "--reuse-values", "--atomic"]
         if settings.DEBUG:
             helm_command += ["--debug"]
         if settings.DRY_RUN:
@@ -59,7 +74,7 @@ class ServiceController(IServiceController):
         helm_command += [
             str(self.service.pid),
             self.service.template,
-            "--namespace", self.service.org.namespace
+            "--namespace", self.service.namespace
         ]
         result = subprocess.run(helm_command, check=True, capture_output=True, text=True)
         if result.returncode != 0:
@@ -68,12 +83,18 @@ class ServiceController(IServiceController):
     @state.transition(source=ServiceStatus.RUNNING, target=ServiceStatus.STOPPED)
     def stop(self):
         """ Stop the service by deleting the running pod """
-        # TODO switch this to use helm delete
-        kubectl_command = settings.KUBECTL_COMMAND + [
-            "delete", "pod", str(self.service.pid),
-            "--namespace", self.service.org.namespace
+        helm_command = [
+            "helm", "delete"]
+        helm_command += [
+            str(self.service.pid),
+            "--namespace", self.service.namespace,
+            "--wait"
         ]
-        result = subprocess.run(kubectl_command, check=True, capture_output=True, text=True)
+        if settings.DEBUG:
+            helm_command += ["--debug"]
+        if settings.DRY_RUN:
+            helm_command += ["--dry-run"]
+        result = subprocess.run(helm_command, check=True, capture_output=True, text=True)
         if result.returncode != 0:
             raise Exception(f"Kubectl command failed with return code {result.returncode}: {result.stderr}")
     

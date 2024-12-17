@@ -3,9 +3,13 @@ import uuid
 from django.db import models
 from django.conf import settings
 
+from .allocation import DefaultNodeAllocator, NodeAllocator
 from .status import ServiceStatus
 from usop.apps.users.models import Org
 from .interfaces import *
+from usop.lib.CachedClassUtil import CachedClassUtil
+
+
 
 
 class Region(models.Model):
@@ -30,6 +34,46 @@ class Region(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+    
+    def get_node_allocator(self) -> NodeAllocator:
+        return DefaultNodeAllocator()
+
+
+class Template(models.Model):
+    """A template for a service that can be deployed in a region"""
+
+    name: str = models.CharField(max_length=128)
+    """ User facing label for the template """
+
+    blocked: bool = models.BooleanField(default=False)
+    """ Wether the allow users interacting with the template """
+
+    created: datetime = models.DateTimeField(editable=False, auto_now_add=True)
+    """ The date the template was added into the database. """
+        
+    app_name: str = models.CharField(max_length=128, blank=True, null=True)
+    """ For linking to a django application """
+    
+    extid = models.UUIDField(
+        verbose_name="Platform ID",
+        help_text="Automatically generated id for external identification of the template",
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
+    """ Automatically generated id for external identification of the template. """
+    
+    class Meta:
+        verbose_name = "template"
+        verbose_name_plural = "templates"
+        ordering = ["name"]
+        indexes = [
+            models.Index(fields=['extid',]),
+            models.Index(fields=['app_name',]),
+        ]
+
+    def __str__(self):
+        return f"{self.name}" 
 
 
 class Template(models.Model):
@@ -255,10 +299,20 @@ class Service(models.Model):
     def __str__(self):
         return f"{self.name}"    
     
-    def get_controller(self) -> IServiceController:
+    def get_service_controller(self) -> IServiceController:
         """ Get the controller for this service """
         model_path = settings.SERVICE_CONTROLLER
-        module, klass = model_path.rsplit(".", 1)
-        services = __import__(module, fromlist=[klass])
-        controller = getattr(services, klass)
-        return controller(self)
+        # TODO allow apps to define their own controllers
+        _class = CachedClassUtil.get_class(model_path)
+        return _class(self)
+    
+    @property
+    def namespace(self):
+        return self.service.region.namespace or settings.DEFAULT_NAMESPACE
+    
+    @property
+    def get_billing_controller(self) -> IBillingController:
+        """ Get the billing controller for this service """
+        model_path = settings.BILLING_CONTROLLER
+        # TODO allow apps to define their own controllers
+        return CachedClassUtil.get_instance(model_path)

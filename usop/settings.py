@@ -166,3 +166,4 @@ DRY_RUN = env("DRY_RUN", default=False)
 DEFAULT_CONTROLLER = env("DEFAULT_CONTROLLER", default="usop.apps.services.controller.ServiceController")
 HELM_COMMAND = ["microk8s","helm"]
 KUBECTL_COMMAND = ["microk8s","kubectl"]
+DEFAULT_NAMESPACE = env("DEFAULT_NAMESPACE", default="usop_default")

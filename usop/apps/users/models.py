@@ -21,16 +21,23 @@ class Org(models.Model):
     """
     
     name = models.CharField(max_length=255)
+    """ Public name of the organization. """
     
     created = models.DateTimeField(editable=False, auto_now_add=True)
+    """ Date of creation of the organization. """
     
     enabled = models.BooleanField(default=True)
+    """ Flag to enable or disable the organization. Disabled organizations can't be assigned or create resources. """
     
     admin_user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='admin_organizations')
+    """ User that has main admin permissions over the organization. """
+    
+    logo = models.ImageField(upload_to='orgs/logos', null=True, blank=True)
+    """ Logo of the organization. """
     
     extid = models.UUIDField(
         verbose_name="ExtID",
-        help_text="Automatically genered unique id for external identification",
+        help_text="Automatically generated unique id for external identification",
         default=uuid.uuid4,
         unique=True,
         editable=False,
@@ -67,21 +74,23 @@ class User(AbstractUser):
     # email = models.EmailField(_("email address"), unique=True)
     # username = None  # type: ignore[assignment]
     created = models.DateTimeField(editable=False, auto_now_add=True)
+    """ Date of creation of the user. """
 
     # EMAIL_FIELD = 'email'
     # USERNAME_FIELD = 'email'
     # REQUIRED_FIELDS = []
 
     objects: ClassVar[UserManager] = UserManager()
+    """ Custom manager for the user model. """
     
     extid = models.UUIDField(
         verbose_name="ExtID",
-        help_text="Automatically genered unique id for external identification",
+        help_text="Automatically generated unique id for external identification",
         default=uuid.uuid4,
         unique=True,
         editable=False,
     )
-    """ Automatically genered unique id for external identification. """
+    """ Automatically generated unique id for external identification. """
 
     def get_absolute_url(self) -> str:
         """Get URL for user's detail view.
@@ -107,3 +116,31 @@ class Membership(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.name} - {self.org.name} ({self.permission})"
+    
+    
+class MembershipInvitation(models.Model):
+    """
+    Represents an invitation to join an organization.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invitations')
+    org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name='invitations')
+    created = models.DateTimeField(editable=False, auto_now_add=True)
+    accepted = models.BooleanField(default=False)
+    permission = models.CharField(max_length=10, choices=[(tag, tag.value) for tag in PermissionType])
+    extid = models.UUIDField(
+        verbose_name="ExtID",
+        help_text="Automatically generated unique id for external identification",
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
+    """ Automatically generated unique id for external identification. """
+
+    class Meta:
+        unique_together = ('user', 'org')
+        indexes = [
+            models.Index(fields=['extid']),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user.name} - {self.org.name} ({'accepted' if self.accepted else 'pending'})"
