@@ -135,8 +135,13 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 
+# Django runtime paths
+static/
+media/
+logs/
+temp/
+
 # Other/Misc
 s.bat
 s.sh
-temp/
 deployment/chart/charts/

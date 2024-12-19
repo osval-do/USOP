@@ -40,43 +40,6 @@ class Region(models.Model):
 
 
 class Template(models.Model):
-    """A template for a service that can be deployed in a region"""
-
-    name: str = models.CharField(max_length=128)
-    """ User facing label for the template """
-
-    blocked: bool = models.BooleanField(default=False)
-    """ Wether the allow users interacting with the template """
-
-    created: datetime = models.DateTimeField(editable=False, auto_now_add=True)
-    """ The date the template was added into the database. """
-        
-    app_name: str = models.CharField(max_length=128, blank=True, null=True)
-    """ For linking to a django application """
-    
-    extid = models.UUIDField(
-        verbose_name="Platform ID",
-        help_text="Automatically generated id for external identification of the template",
-        default=uuid.uuid4,
-        unique=True,
-        editable=False,
-    )
-    """ Automatically generated id for external identification of the template. """
-    
-    class Meta:
-        verbose_name = "template"
-        verbose_name_plural = "templates"
-        ordering = ["name"]
-        indexes = [
-            models.Index(fields=['extid',]),
-            models.Index(fields=['app_name',]),
-        ]
-
-    def __str__(self):
-        return f"{self.name}" 
-
-
-class Template(models.Model):
     """ 
         A template is a base configuration for a service that can be deployed.
     """
@@ -278,10 +241,10 @@ class Service(models.Model):
     status: str = models.CharField(max_length=150, choices=ServiceStatus.choices, default=ServiceStatus.NEW)
     """ The current status of the service """
     
-    template_sku: TemplateSKU = models.ForeignKey(TemplateSKU, related_name="services", on_delete=models.CASCADE)
+    template_sku: TemplateSKU = models.ForeignKey(TemplateSKU, related_name="services", on_delete=models.CASCADE, blank=True, null=True)
     """ Optional template sku used to deploy this service """
     
-    template_version: TemplateVersion = models.ForeignKey(TemplateVersion, related_name="services", on_delete=models.CASCADE)
+    template_version: TemplateVersion = models.ForeignKey(TemplateVersion, related_name="services", on_delete=models.CASCADE, blank=True, null=True)
     """ The template version used to deploy this service """
     
     settings = models.JSONField(blank=True, null=True)

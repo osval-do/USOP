@@ -21,10 +21,12 @@ django-environ==0.11.2
 django-payments==2.0.0
 django-phonenumber-field==8.0.0
 django-timezone-field==7.0
+django-viewflow==2.2.8
 idna==3.7
 kombu==5.3.7
 mercadopago==2.2.3
 oauthlib==3.2.2
+pillow==11.0.0
 phonenumberslite==8.13.40
 prompt_toolkit==3.0.47
 pycparser==2.22

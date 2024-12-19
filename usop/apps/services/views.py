@@ -12,8 +12,8 @@ viewsets=[
         icon='world', 
         app_name='services', 
         viewsets=[
-            ModelViewset(model=Region),
             ModelViewset(model=Service),
+            ModelViewset(model=Region),
         ]
     ),
 ]
