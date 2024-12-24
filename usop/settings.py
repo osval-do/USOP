@@ -3,14 +3,15 @@ from pathlib import Path
 
 
 # PATH VARS
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
 
 
 # ENV FILE
 # Defaults to local if an environment is not specified
 env = environ.Env(DEBUG=(bool, False))
 ENVIRONMENT_NAME = env("ENVIRONMENT_NAME", default="local")
-environ.Env.read_env(os.path.join(BASE_DIR, "envs", ENVIRONMENT_NAME + ".env"))
+environ.Env.read_env(os.path.join(ROOT_DIR, "envs", ENVIRONMENT_NAME + ".env"))
 
 
 # DJANGO
@@ -62,8 +63,10 @@ MIDDLEWARE = [
 ROOT_URLCONF = "usop.urls"
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "BACKEND": "django.template.backends.django.DjangoTemplates",        
+        "DIRS": [
+            BASE_DIR / "templates"
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -138,9 +141,9 @@ STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
-)
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, "static"),
+# )
 
 
 # Default primary key field type
